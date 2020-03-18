@@ -1,0 +1,35 @@
+CS3843 Team Crypto Order Assignments:
+
+--- Start Point=45, Hop Count=33, #Teams=30
+
+Team_01: BEDCA
+Team_02: DBACE
+Team_03: ECADB
+Team_04: ADECB
+Team_05: CADBE
+Team_06: DBECA
+Team_07: EDCBA
+Team_08: AECBD
+Team_09: CBAED
+Team_10: DCEBA
+Team_11: BADEC
+Team_12: CDBAE
+Team_13: DECAB
+Team_14: BCDAE
+Team_15: CDEAB
+Team_16: EACBD
+Team_17: ABECD
+Team_18: BDAEC
+Team_19: CEABD
+Team_20: EBADC
+Team_21: ACDEB
+Team_22: BEADC
+Team_23: DACEB
+Team_24: ECBAD
+Team_25: ADCBE
+Team_26: BECDA
+Team_27: DBCAE
+Team_28: ECDAB
+Team_29: AEBCD
+Team_30: CAEBD
+

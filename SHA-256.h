@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #ifndef _SHA256_H
 #define _SHA256_H
 
@@ -8,6 +10,7 @@
 #ifndef uint32
 #define uint32 unsigned long int
 #endif
+
 
 typedef struct
 {

@@ -9,7 +9,7 @@
 // code to encrypt the data as specified by the project assignment
 int encryptData(char *data, int dataLength)
 {
-	int resulti = 0;
+	int result = 0;
 
 	gdebug1 = 0;					// a couple of global variables that could be used for debugging
 	gdebug2 = 0;					// also can have a breakpoint in C code
@@ -22,6 +22,7 @@ int encryptData(char *data, int dataLength)
 	__asm {
 		// you will need to reference some of these global variables
 		// (gptrPasswordHash or gPasswordHash), (gptrKey or gkey), gNumRounds
+
 
 		// simple example that xors 2nd byte of data with 14th byte in the key file
 		lea esi,gkey				// put the ADDRESS of gkey into esi
@@ -50,5 +51,5 @@ int encryptData(char *data, int dataLength)
 									// Capital "B" = 0x42 becomes lowercase "c" since 0x42 xor 0x21 = 0x63
 	}
 
-	return resulti;
+	return result;
 } // encryptData

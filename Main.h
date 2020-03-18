@@ -13,7 +13,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#define CRYPTO_ORDER "DBECA\0"
+#define CRYPTO_ORDER "ABCDE\0"
 #define var_Index -4
 #define var_HopCnt -8
 #define var_RoundNum -12
@@ -32,6 +32,8 @@
 
 // Prototypes
 int sha256(char *fileName, char *dataBuffer, DWORD dataLength, unsigned char sha256sum[32]);
+int encryptData(char *data, int dataLength);
+int decryptData(char *data, int dataLength);
 void encryptData_01(char *data, int length);
 void decryptData_01(char *data, int length);
 void encryptData_02(char *data, int length);
