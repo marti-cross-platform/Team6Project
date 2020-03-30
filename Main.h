@@ -13,7 +13,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#define CRYPTO_ORDER "ABCDE\0"
+#define CRYPTO_ORDER "DBECA\0"
 #define var_Index -4
 #define var_HopCnt -8
 #define var_RoundNum -12
