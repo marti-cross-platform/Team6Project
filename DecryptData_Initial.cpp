@@ -45,9 +45,14 @@ int decryptData(char *data, int dataLength)
 
 	/* LOOP THROUGH ENTIRE data[] -- BYTE BY BYTE */
 		lbl_LOOP :
-		mov dl, byte ptr[edi + ebx] //
+		mov dl, byte ptr[edi + ebx] // put the data being encrypted into dl
 		xor dl, byte ptr[esi + eax] // data[ebx] = data[ebx] xor with keyfile[starting_index]
-		mov byte ptr[edi + ebx], dl //
+
+		/*Part E: get dl's value from the decrypt table
+		  TO BE DONE: order each step correctly*/
+		mov dl, gDecodeTable[dl]
+
+		mov byte ptr[edi + ebx], dl // put the now encrypted data back into the array
 
 		add ebx, 1 // increment %ebx by 1
 		cmp ebx, ecx // if(ebx > ecx) { end loop }

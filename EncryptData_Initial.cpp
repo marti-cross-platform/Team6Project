@@ -47,10 +47,15 @@ int encryptData(char *data, int dataLength)
 	// LOOP THROUGH ENTIRE data[] BYTE BY BYTE
 	//
 		lbl_LOOP :
-		mov dl, byte ptr[edi + ebx] //
+		mov dl, byte ptr[edi + ebx] //get the current data being manipulated
 		xor dl, byte ptr[esi + eax] // data[ebx] = data[ebx] xor with keyfile[starting_index]
-		mov byte ptr[edi + ebx], dl //
 
+		/* Part E, swapping dl with the table value.
+		   TO BE DONE: ordering each part correctly.*/
+		mov dl, gEncodeTable[dl]
+		
+		mov byte ptr[edi + ebx], dl //replace the data in array with the now-encrypted data
+		
 		add ebx, 1 // increment %ebx by 1
 		cmp ebx, ecx // if(ebx > ecx) { end loop }
 		ja lbl_EXIT_END //
