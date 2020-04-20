@@ -48,20 +48,27 @@ int decryptData(char *data, int dataLength)
 		mov dl, byte ptr[edi + ebx] // put the data being encrypted into dl
 			xor dl, byte ptr[esi + eax] // data[ebx] = data[ebx] xor with keyfile[starting_index]
 
-			// #D rotate 3 bits right
+			// Part D rotate 3 bits right
+			ror dl, 3
 
-			// #B invert bits 0, 3, 6		0xB5 --> 0xFC
+			// Part B invert bits 0, 3, 6		0xB5 --> 0xFC
 			mov	DWORD PTR[ebp + 8], 73;
-			mov	eax, DWORD PTR[data]
+		mov	eax, DWORD PTR[data]
 			xor	eax, DWORD PTR[ebp + 8]	// XOR with bitMask, 0x49
 
-			/*Part E: get dl's value from the decrypt table
-			TO BE DONE: order each step correctly*/
-			mov dl, gDecodeTable[esi]
+			/* Part E, swapping dl with the table value.
+			TO BE DONE: ordering each part correctly.*/
+			mov dl, gEncodeTable[esi]
 
-			// #C swap half nibbles
+			// Part C swap half nibbles
+			mov eax, edx //load data to be swapped in eax
+			lea bl, [eax * 4] //shift data to the left 2 and save in bl
+			and bl, 0xCC // masking to get indexes we want to swap eg. 1100 1100
+			shr al, 2 // shift original data 2 to the right
+			and al, 0x33 // mask remaining indexes eg. 0011 0011
+			or al, bl // combine and save in al
 
-			// #A reverse bit order	- value will be in 'ch'		0xAD --> 0xB5
+			// Part A reverse bit order	- value will be in 'ch'		0xAD --> 0xB5
 			mov eax, data
 			mov cl, 7
 			mov dh, 1	// DH is a 1 which travels in the byte from right to left
