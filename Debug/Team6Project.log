@@ -1,11 +1,9 @@
-﻿Build started 4/20/2020 7:00:53 AM.
+﻿Build started 4/20/2020 7:32:38 AM.
      1>Project "C:\Users\ivk737\Documents\Visual Studio 2013\Projects\Team6Project\Team6Project.vcxproj" on node 2 (Build target(s)).
      1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(364,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W2 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /FAcs /Fa"Debug\\" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt DecryptData_Initial.cpp EncryptData_Initial.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W2 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /FAcs /Fa"Debug\\" /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt EncryptData_Initial.cpp
          EncryptData_Initial.cpp
-         DecryptData_Initial.cpp
-         Generating Code...
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:".\Debug\Team6Project.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:".\Debug\Team6Project.pdb" /TLBID:1 /DYNAMICBASE:NO /NXCOMPAT /IMPLIB:".\Debug\Team6Project.lib" /MACHINE:X86 Debug\CryptoMain_Initial.obj
          Debug\DecryptData_Initial.obj
@@ -16,4 +14,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:01.02
+Time Elapsed 00:00:00.67

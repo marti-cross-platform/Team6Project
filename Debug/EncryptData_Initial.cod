@@ -182,10 +182,10 @@ $lbl_LOOP$4:
 ; 59   : 
 ; 60   : 			/* Part E, swapping dl with the table value.
 ; 61   : 			TO BE DONE: ordering each part correctly.*/
-; 62   : 			mov dl, gEncodeTable[ebx]
+; 62   : 			mov dl, gEncodeTable[esi]
 
-  0007e	8a 93 00 00 00
-	00		 mov	 dl, BYTE PTR ?gEncodeTable@@3PAEA[ebx]
+  0007e	8a 96 00 00 00
+	00		 mov	 dl, BYTE PTR ?gEncodeTable@@3PAEA[esi]
 
 ; 63   : 
 ; 64   : 			// Part C swap half nibbles

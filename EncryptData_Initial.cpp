@@ -59,7 +59,7 @@ int encryptData(char *data, int dataLength)
 
 			/* Part E, swapping dl with the table value.
 			TO BE DONE: ordering each part correctly.*/
-			mov dl, gEncodeTable[ebx]
+			mov dl, gEncodeTable[esi]
 
 			// Part C swap half nibbles
 

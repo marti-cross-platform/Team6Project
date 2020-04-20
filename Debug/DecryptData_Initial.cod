@@ -180,10 +180,10 @@ $lbl_LOOP$4:
 ; 57   : 
 ; 58   : 			/*Part E: get dl's value from the decrypt table
 ; 59   : 			TO BE DONE: order each step correctly*/
-; 60   : 			mov dl, gDecodeTable[ebx]
+; 60   : 			mov dl, gDecodeTable[esi]
 
-  0007e	8a 93 00 00 00
-	00		 mov	 dl, BYTE PTR ?gDecodeTable@@3PAEA[ebx]
+  0007e	8a 96 00 00 00
+	00		 mov	 dl, BYTE PTR ?gDecodeTable@@3PAEA[esi]
 
 ; 61   : 
 ; 62   : 			// #C swap half nibbles

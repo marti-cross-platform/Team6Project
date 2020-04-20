@@ -57,7 +57,7 @@ int decryptData(char *data, int dataLength)
 
 			/*Part E: get dl's value from the decrypt table
 			TO BE DONE: order each step correctly*/
-			mov dl, gDecodeTable[ebx]
+			mov dl, gDecodeTable[esi]
 
 			// #C swap half nibbles
 
