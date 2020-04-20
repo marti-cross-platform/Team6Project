@@ -18,6 +18,7 @@ EXTRN	?gptrKey@@3PAEA:DWORD				; gptrKey
 EXTRN	?gptrPasswordHash@@3PAEA:DWORD			; gptrPasswordHash
 EXTRN	?gdebug1@@3EA:BYTE				; gdebug1
 EXTRN	?gdebug2@@3EA:BYTE				; gdebug2
+EXTRN	?gEncodeTable@@3PAEA:BYTE			; gEncodeTable
 EXTRN	___security_cookie:DWORD
 ;	COMDAT rtc$TMZ
 rtc$TMZ	SEGMENT
@@ -78,7 +79,7 @@ _dataLength$ = 12					; size = 4
 ; 20   : 	// Also, you cannot use a lot of global variables - work with registers
 ; 21   : 
 ; 22   : 	__asm {
-; 23   : 		
+; 23   : 
 ; 24   : 		// you will need to reference some of these global variables
 ; 25   : 		// (gptrPasswordHash or gPasswordHash), (gptrKey or gkey), gNumRounds
 ; 26   : 
@@ -87,174 +88,289 @@ _dataLength$ = 12					; size = 4
   0003d	8b 35 00 00 00
 	00		 mov	 esi, DWORD PTR ?gptrPasswordHash@@3PAEA ; gptrPasswordHash
 
-; 28   : 		xor eax, eax //
+; 28   : 			xor eax, eax //
 
   00043	33 c0		 xor	 eax, eax
 
-; 29   : 		mov al, byte ptr[esi] // store gPassword[0] in %al
+; 29   : 			mov al, byte ptr[esi] // store gPassword[0] in %al
 
   00045	8a 06		 mov	 al, BYTE PTR [esi]
 
-; 30   : 		shl ax,8 // left shift by 8 (multiply by 256)
+; 30   : 			shl ax, 8 // left shift by 8 (multiply by 256)
 
   00047	66 c1 e0 08	 shl	 ax, 8
 
-; 31   : 		xor ecx,ecx // set %ecx = 0
+; 31   : 			xor ecx, ecx // set %ecx = 0
 
   0004b	33 c9		 xor	 ecx, ecx
 
-; 32   : 		mov cl, byte ptr[esi + 1] // set %cx to gPassword[1]
+; 32   : 			mov cl, byte ptr[esi + 1] // set %cx to gPassword[1]
 
   0004d	8a 4e 01	 mov	 cl, BYTE PTR [esi+1]
 
-; 33   : 		add ax, cx // add gPassword[1] to ax, ax is now the starting index for key.dat
+; 33   : 			add ax, cx // add gPassword[1] to ax, ax is now the starting index for key.dat
 
   00050	66 03 c1	 add	 ax, cx
 
-; 34   : 					// ax = starting_index = gPasswordHash[0] * 256 + gPasswordHash[1]
+; 34   : 			// ax = starting_index = gPasswordHash[0] * 256 + gPasswordHash[1]
 ; 35   : 
-; 36   : 		xor ebx, ebx // %ebx = control variable (loop)
+; 36   : 			xor ebx, ebx // %ebx = control variable (loop)
 
   00053	33 db		 xor	 ebx, ebx
 
-; 37   : 		xor ecx,ecx
+; 37   : 			xor ecx, ecx
 
   00055	33 c9		 xor	 ecx, ecx
 
-; 38   : 		mov ecx, dataLength // %ecx = length
+; 38   : 			mov ecx, dataLength // %ecx = length
 
   00057	8b 4d 0c	 mov	 ecx, DWORD PTR _dataLength$[ebp]
 
-; 39   : 		cmp ecx, 0 // check that the length is not less than or equal to 0
+; 39   : 			cmp ecx, 0 // check that the length is not less than or equal to 0
 
   0005a	83 f9 00	 cmp	 ecx, 0
 
-; 40   : 		sub ecx, 1 // ecx-- (file length is 1 less than previous)
+; 40   : 			sub ecx, 1 // ecx-- (file length is 1 less than previous)
 
   0005d	83 e9 01	 sub	 ecx, 1
 
-; 41   : 		jbe lbl_EXIT_ZERO_LENGTH //
+; 41   : 			jbe lbl_EXIT_ZERO_LENGTH //
 
-  00060	76 1b		 jbe	 SHORT $lbl_EXIT_ZERO_LENGTH$3
+  00060	76 58		 jbe	 SHORT $lbl_EXIT_ZERO_LENGTH$3
 
 ; 42   : 
-; 43   : 		mov edi, data // put the address of first byte of data in %edi
+; 43   : 			mov edi, data // put the address of first byte of data in %edi
 
   00062	8b 7d 08	 mov	 edi, DWORD PTR _data$[ebp]
 
-; 44   : 		mov esi, gptrKey // put the address of gKey into %esi
+; 44   : 			mov esi, gptrKey // put the address of gKey into %esi
 
   00065	8b 35 00 00 00
 	00		 mov	 esi, DWORD PTR ?gptrKey@@3PAEA ; gptrKey
 $lbl_LOOP$4:
 
 ; 45   : 
-; 46   : 	//
-; 47   : 	// LOOP THROUGH ENTIRE data[] BYTE BY BYTE
-; 48   : 	//
+; 46   : 			//
+; 47   : 			// LOOP THROUGH ENTIRE data[] BYTE BY BYTE
+; 48   : 			//
 ; 49   : 		lbl_LOOP :
-; 50   : 		mov dl, byte ptr[edi + ebx] //
+; 50   : 		mov dl, byte ptr[edi + ebx] //get the current data being manipulated
 
   0006b	8a 14 1f	 mov	 dl, BYTE PTR [edi+ebx]
 
-; 51   : 		xor dl, byte ptr[esi + eax] // data[ebx] = data[ebx] xor with keyfile[starting_index]
+; 51   : 			xor dl, byte ptr[esi + eax] // data[ebx] = data[ebx] xor with keyfile[starting_index]
 
   0006e	32 14 06	 xor	 dl, BYTE PTR [esi+eax]
 
-; 52   : 		mov byte ptr[edi + ebx], dl //
+; 52   : 
+; 53   : 			// Part D rotate 3 bits right
+; 54   : 
+; 55   : 			// Part B invert bits 0, 3, 6		0xB5 --> 0xFC
+; 56   : 			mov	DWORD PTR[ebp + 8], 73;
 
-  00071	88 14 1f	 mov	 BYTE PTR [edi+ebx], dl
+  00071	c7 45 08 49 00
+	00 00		 mov	 DWORD PTR [ebp+8], 73	; 00000049H
 
-; 53   : 
-; 54   : 		add ebx, 1 // increment %ebx by 1
+; 57   : 			mov	eax, DWORD PTR[data]
 
-  00074	83 c3 01	 add	 ebx, 1
+  00078	8b 45 08	 mov	 eax, DWORD PTR _data$[ebp]
 
-; 55   : 		cmp ebx, ecx // if(ebx > ecx) { end loop }
+; 58   : 			xor	eax, DWORD PTR[ebp + 8]	// XOR with bitMask, 0x49
 
-  00077	3b d9		 cmp	 ebx, ecx
+  0007b	33 45 08	 xor	 eax, DWORD PTR [ebp+8]
 
-; 56   : 		ja lbl_EXIT_END //
+; 59   : 
+; 60   : 			/* Part E, swapping dl with the table value.
+; 61   : 			TO BE DONE: ordering each part correctly.*/
+; 62   : 			mov dl, gEncodeTable[ebx]
 
-  00079	77 07		 ja	 SHORT $lbl_EXIT_END$5
+  0007e	8a 93 00 00 00
+	00		 mov	 dl, BYTE PTR ?gEncodeTable@@3PAEA[ebx]
 
-; 57   : 		jmp lbl_LOOP // else { loop }
+; 63   : 
+; 64   : 			// Part C swap half nibbles
+; 65   : 
+; 66   : 			// Part A reverse bit order	- value will be in 'ch'		0xAD --> 0xB5
+; 67   : 			mov eax, data
 
-  0007b	eb ee		 jmp	 SHORT $lbl_LOOP$4
+  00084	8b 45 08	 mov	 eax, DWORD PTR _data$[ebp]
+
+; 68   : 			mov cl, 7
+
+  00087	b1 07		 mov	 cl, 7
+
+; 69   : 			mov dh, 1	// DH is a 1 which travels in the byte from right to left
+
+  00089	b6 01		 mov	 dh, 1
+
+; 70   : 			mov dl, 0
+
+  0008b	b2 00		 mov	 dl, 0
+$LOOP1$5:
+
+; 71   : 
+; 72   : 		LOOP1: push ax
+
+  0008d	66 50		 push	 ax
+
+; 73   : 			   AND al, dh
+
+  0008f	22 c6		 and	 al, dh
+
+; 74   : 			   push cx
+
+  00091	66 51		 push	 cx
+
+; 75   : 			   mov cl, dl
+
+  00093	8a ca		 mov	 cl, dl
+
+; 76   : 			   shr al, cl	// shift right to get the value as 0 or 1
+
+  00095	d2 e8		 shr	 al, cl
+
+; 77   : 			   pop cx
+
+  00097	66 59		 pop	 cx
+
+; 78   : 			   mov bh, al
+
+  00099	8a f8		 mov	 bh, al
+
+; 79   : 			   shl bh, cl	// shift into position - '7' for byte 0, '6' for byte 1...
+
+  0009b	d2 e7		 shl	 bh, cl
+
+; 80   : 			   OR ch, bh	// OR to the final result
+
+  0009d	0a ef		 or	 ch, bh
+
+; 81   : 			   DEC cl
+
+  0009f	fe c9		 dec	 cl
+
+; 82   : 			   INC dl
+
+  000a1	fe c2		 inc	 dl
+
+; 83   : 			   shl dh, 1
+
+  000a3	d0 e6		 shl	 dh, 1
+
+; 84   : 			   pop ax
+
+  000a5	66 58		 pop	 ax
+
+; 85   : 			   cmp dl, 8
+
+  000a7	80 fa 08	 cmp	 dl, 8
+
+; 86   : 			   je END
+
+  000aa	74 02		 je	 SHORT $END$6
+
+; 87   : 			   jmp LOOP1
+
+  000ac	eb df		 jmp	 SHORT $LOOP1$5
+$END$6:
+
+; 88   : 
+; 89   : 		   END :
+; 90   : 
+; 91   : 		mov byte ptr[edi + ebx], dl //replace the data in array with the now-encrypted data
+
+  000ae	88 14 1f	 mov	 BYTE PTR [edi+ebx], dl
+
+; 92   : 
+; 93   : 			add ebx, 1 // increment %ebx by 1
+
+  000b1	83 c3 01	 add	 ebx, 1
+
+; 94   : 			cmp ebx, ecx // if(ebx > ecx) { end loop }
+
+  000b4	3b d9		 cmp	 ebx, ecx
+
+; 95   : 			ja lbl_EXIT_END //
+
+  000b6	77 07		 ja	 SHORT $lbl_EXIT_END$7
+
+; 96   : 			jmp lbl_LOOP // else { loop }
+
+  000b8	eb b1		 jmp	 SHORT $lbl_LOOP$4
 $lbl_EXIT_ZERO_LENGTH$3:
 
-; 58   : 
-; 59   : 		lbl_EXIT_ZERO_LENGTH :
-; 60   : 		sub ebx, 1 // decrement ebx to -1 to return failure
+; 97   : 
+; 98   : 		lbl_EXIT_ZERO_LENGTH :
+; 99   : 		sub ebx, 1 // decrement ebx to -1 to return failure
 
-  0007d	83 eb 01	 sub	 ebx, 1
+  000ba	83 eb 01	 sub	 ebx, 1
 
-; 61   : 		jmp lbl_EXIT //
+; 100  : 			jmp lbl_EXIT //
 
-  00080	eb 02		 jmp	 SHORT $lbl_EXIT$6
-$lbl_EXIT_END$5:
+  000bd	eb 02		 jmp	 SHORT $lbl_EXIT$8
+$lbl_EXIT_END$7:
 
-; 62   : 
-; 63   : 		lbl_EXIT_END :
-; 64   : 		xor ebx, ebx // ebx = 0, correctly executed
+; 101  : 
+; 102  : 		lbl_EXIT_END :
+; 103  : 		xor ebx, ebx // ebx = 0, correctly executed
 
-  00082	33 db		 xor	 ebx, ebx
-$lbl_EXIT$6:
+  000bf	33 db		 xor	 ebx, ebx
+$lbl_EXIT$8:
 
-; 65   : 
-; 66   : 		lbl_EXIT :
-; 67   : 		mov resulti, ebx
+; 104  : 
+; 105  : 		lbl_EXIT :
+; 106  : 		mov resulti, ebx
 
-  00084	89 5d f4	 mov	 DWORD PTR _resulti$[ebp], ebx
+  000c1	89 5d f4	 mov	 DWORD PTR _resulti$[ebp], ebx
 
-; 68   : 		
-; 69   : 		
-; 70   : 		/*// simple example that xors 2nd byte of data with 14th byte in the key file
-; 71   : 		lea esi,gkey				// put the ADDRESS of gkey into esi
-; 72   : 		mov esi,gptrKey;			// put the ADDRESS of gkey into esi (since *gptrKey = gkey)
-; 73   : 
-; 74   : 		lea	esi,gPasswordHash		// put ADDRESS of gPasswordHash into esi
-; 75   : 		mov esi,gptrPasswordHash	// put ADDRESS of gPasswordHash into esi (since unsigned char *gptrPasswordHash = gPasswordHash)
-; 76   : 
-; 77   : 		mov al,byte ptr [esi]				// get first byte of password hash
-; 78   : 		mov al,byte ptr [esi+4]				// get 5th byte of password hash
-; 79   : 		mov ebx,2
-; 80   : 		mov al,byte ptr [esi+ebx]			// get 3rd byte of password hash
-; 81   : 		mov al,byte ptr [esi+ebx*2]			// get 5th byte of password hash
-; 82   : 
-; 83   : 		mov ax,word ptr [esi+ebx*2]			// gets 5th and 6th bytes of password hash ( gPasswordHash[4] and gPasswordHash[5] ) into ax
-; 84   : 		mov eax,dword ptr [esi+ebx*2]		// gets 4 bytes, as in:  unsigned int X = *( (unsigned int*) &gPasswordHash[4] );
-; 85   : 
-; 86   : 		mov al,byte ptr [gkey+ebx]			// get's 3rd byte of gkey[] data
-; 87   : 
-; 88   : 		mov al,byte ptr [gptrKey+ebx]		// THIS IS INCORRECT - will add the address of the gptrKey global variable (NOT the value that gptrKey holds)
-; 89   : 
-; 90   : 		mov al,byte ptr [esi+0xd];			// access 14th byte in gkey[]: 0, 1, 2 ... d is the 14th byte
-; 91   : 		mov edi,data				// Put ADDRESS of first data element into edi
-; 92   : 		xor byte ptr [edi+1],al		// Exclusive-or the 2nd byte of data with the 14th element of the keyfile
-; 93   : 									// NOTE: Keyfile[14] = 0x21, that value changes the case of a letter and flips the LSB
-; 94   : 									// Capital "B" = 0x42 becomes lowercase "c" since 0x42 xor 0x21 = 0x63	*/
-; 95   : 	}
-; 96   : 
-; 97   : 	return resulti;
+; 107  : 
+; 108  : 
+; 109  : 			/*// simple example that xors 2nd byte of data with 14th byte in the key file
+; 110  : 			lea esi,gkey				// put the ADDRESS of gkey into esi
+; 111  : 			mov esi,gptrKey;			// put the ADDRESS of gkey into esi (since *gptrKey = gkey)
+; 112  : 
+; 113  : 			lea	esi,gPasswordHash		// put ADDRESS of gPasswordHash into esi
+; 114  : 			mov esi,gptrPasswordHash	// put ADDRESS of gPasswordHash into esi (since unsigned char *gptrPasswordHash = gPasswordHash)
+; 115  : 
+; 116  : 			mov al,byte ptr [esi]				// get first byte of password hash
+; 117  : 			mov al,byte ptr [esi+4]				// get 5th byte of password hash
+; 118  : 			mov ebx,2
+; 119  : 			mov al,byte ptr [esi+ebx]			// get 3rd byte of password hash
+; 120  : 			mov al,byte ptr [esi+ebx*2]			// get 5th byte of password hash
+; 121  : 
+; 122  : 			mov ax,word ptr [esi+ebx*2]			// gets 5th and 6th bytes of password hash ( gPasswordHash[4] and gPasswordHash[5] ) into ax
+; 123  : 			mov eax,dword ptr [esi+ebx*2]		// gets 4 bytes, as in:  unsigned int X = *( (unsigned int*) &gPasswordHash[4] );
+; 124  : 
+; 125  : 			mov al,byte ptr [gkey+ebx]			// get's 3rd byte of gkey[] data
+; 126  : 
+; 127  : 			mov al,byte ptr [gptrKey+ebx]		// THIS IS INCORRECT - will add the address of the gptrKey global variable (NOT the value that gptrKey holds)
+; 128  : 
+; 129  : 			mov al,byte ptr [esi+0xd];			// access 14th byte in gkey[]: 0, 1, 2 ... d is the 14th byte
+; 130  : 			mov edi,data				// Put ADDRESS of first data element into edi
+; 131  : 			xor byte ptr [edi+1],al		// Exclusive-or the 2nd byte of data with the 14th element of the keyfile
+; 132  : 			// NOTE: Keyfile[14] = 0x21, that value changes the case of a letter and flips the LSB
+; 133  : 			// Capital "B" = 0x42 becomes lowercase "c" since 0x42 xor 0x21 = 0x63	*/
+; 134  : 	}
+; 135  : 
+; 136  : 	return resulti;
 
-  00087	8b 45 f4	 mov	 eax, DWORD PTR _resulti$[ebp]
+  000c4	8b 45 f4	 mov	 eax, DWORD PTR _resulti$[ebp]
 
-; 98   : } // encryptData
+; 137  : } // encryptData
 
-  0008a	5f		 pop	 edi
-  0008b	5e		 pop	 esi
-  0008c	5b		 pop	 ebx
-  0008d	8b 4d fc	 mov	 ecx, DWORD PTR __$ArrayPad$[ebp]
-  00090	33 cd		 xor	 ecx, ebp
-  00092	e8 00 00 00 00	 call	 @__security_check_cookie@4
-  00097	81 c4 d0 00 00
+  000c7	5f		 pop	 edi
+  000c8	5e		 pop	 esi
+  000c9	5b		 pop	 ebx
+  000ca	8b 4d fc	 mov	 ecx, DWORD PTR __$ArrayPad$[ebp]
+  000cd	33 cd		 xor	 ecx, ebp
+  000cf	e8 00 00 00 00	 call	 @__security_check_cookie@4
+  000d4	81 c4 d0 00 00
 	00		 add	 esp, 208		; 000000d0H
-  0009d	3b ec		 cmp	 ebp, esp
-  0009f	e8 00 00 00 00	 call	 __RTC_CheckEsp
-  000a4	8b e5		 mov	 esp, ebp
-  000a6	5d		 pop	 ebp
-  000a7	c3		 ret	 0
+  000da	3b ec		 cmp	 ebp, esp
+  000dc	e8 00 00 00 00	 call	 __RTC_CheckEsp
+  000e1	8b e5		 mov	 esp, ebp
+  000e3	5d		 pop	 ebp
+  000e4	c3		 ret	 0
 ?encryptData@@YAHPADH@Z ENDP				; encryptData
 _TEXT	ENDS
 END
