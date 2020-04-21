@@ -51,7 +51,6 @@ int encryptData(char *data, int dataLength)
 			xor dl, byte ptr[esi + eax] // data[ebx] = data[ebx] xor with keyfile[starting_index]
 
 			// Part D rotate 3 bits right
-			ror dl,3
 
 			// Part B invert bits 0, 3, 6		0xB5 --> 0xFC
 			mov	DWORD PTR[ebp + 8], 73;
@@ -60,15 +59,9 @@ int encryptData(char *data, int dataLength)
 
 			/* Part E, swapping dl with the table value.
 			TO BE DONE: ordering each part correctly.*/
-			mov dl, gEncodeTable[esi]
+			mov dl, gEncodeTable[ebx]
 
 			// Part C swap half nibbles
-			mov eax, edx //load data to be swapped in eax
-			lea bl, [eax*4] //shift data to the left 2 and save in bl
-			and bl, 0xCC // masking to get indexes we want to swap eg. 1100 1100
-			shr al, 2 // shift original data 2 to the right
-			and al, 0x33 // mask remaining indexes eg. 0011 0011
-			or al, bl // combine and save in al
 
 			// Part A reverse bit order	- value will be in 'ch'		0xAD --> 0xB5
 			mov eax, data
