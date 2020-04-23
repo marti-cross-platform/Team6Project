@@ -52,13 +52,14 @@ int encryptData(char *data, int dataLength)
 
 				// XOR with the keyFile
 				xor dl, byte ptr[esi + eax];	data[ebx] = data[ebx] xor with keyfile[starting_index]
+				//*/
 
-				// Free up the registers for use in Steps A - E 
+				// Free up the registers for use in Steps A - E
 				push eax
 				push ebx
 				push ecx				
 				
-				// Part D rotate 3 bits right
+				//Part D rotate 3 bits right
 				ror dl, 3
 				//*/
 

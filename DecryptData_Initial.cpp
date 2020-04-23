@@ -110,6 +110,7 @@ int decryptData(char *data, int dataLength)
 
 			// XOR with the keyFile
 			xor dl, byte ptr[esi + eax];	data[ebx] = data[ebx] xor with keyfile[starting_index]
+			//*/
 
 			// LOOP control
 			add ebx, 1;						increment loop counter by 1

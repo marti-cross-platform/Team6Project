@@ -338,84 +338,85 @@ $END$6:
 
   000c1	32 14 06	 xor	 dl, BYTE PTR [esi+eax]
 
-; 113  : 
-; 114  : 			// LOOP control
-; 115  : 			add ebx, 1;						increment loop counter by 1
+; 113  : 			//*/
+; 114  : 
+; 115  : 			// LOOP control
+; 116  : 			add ebx, 1;						increment loop counter by 1
 
   000c4	83 c3 01	 add	 ebx, 1
 
-; 116  : 			cmp ebx, ecx;					if dataLength of the input file > loop counter, exit to lbl_EXIT
+; 117  : 			cmp ebx, ecx;					if dataLength of the input file > loop counter, exit to lbl_EXIT
 
   000c7	3b d9		 cmp	 ebx, ecx
 
-; 117  : 			ja lbl_EXIT_END
+; 118  : 			ja lbl_EXIT_END
 
   000c9	77 07		 ja	 SHORT $lbl_EXIT_END$7
 
-; 118  : 			jmp lbl_LOOP;					if dataLength < loop counter, jump back to lbl_LOOP
+; 119  : 			jmp lbl_LOOP;					if dataLength < loop counter, jump back to lbl_LOOP
 
   000cb	eb 9e		 jmp	 SHORT $lbl_LOOP$4
 $lbl_EXIT_ZERO_LENGTH$3:
 
-; 119  : 
-; 120  : 		lbl_EXIT_ZERO_LENGTH :
-; 121  : 		sub ebx, 1 // decrement ebx to -1 to return failure
+; 120  : 
+; 121  : 		lbl_EXIT_ZERO_LENGTH :
+; 122  : 		sub ebx, 1 // decrement ebx to -1 to return failure
 
   000cd	83 eb 01	 sub	 ebx, 1
 
-; 122  : 		jmp lbl_EXIT //
+; 123  : 		jmp lbl_EXIT //
 
   000d0	eb 02		 jmp	 SHORT $lbl_EXIT$8
 $lbl_EXIT_END$7:
 
-; 123  : 
-; 124  : 		lbl_EXIT_END :
-; 125  : 		xor ebx, ebx // ebx = 0, correctly executed
+; 124  : 
+; 125  : 		lbl_EXIT_END :
+; 126  : 		xor ebx, ebx // ebx = 0, correctly executed
 
   000d2	33 db		 xor	 ebx, ebx
 $lbl_EXIT$8:
 
-; 126  : 
-; 127  : 		lbl_EXIT :
-; 128  : 		mov resulti, ebx
+; 127  : 
+; 128  : 		lbl_EXIT :
+; 129  : 		mov resulti, ebx
 
   000d4	89 5d f4	 mov	 DWORD PTR _resulti$[ebp], ebx
 
-; 129  : 		
-; 130  : 		/*
-; 131  : 		// simple example that xors 2nd byte of data with 14th byte in the key file
-; 132  : 		lea esi,gkey				// put the ADDRESS of gkey into esi
-; 133  : 		mov esi,gptrKey;			// put the ADDRESS of gkey into esi (since *gptrKey = gkey)
-; 134  : 
-; 135  : 		lea	esi,gPasswordHash		// put ADDRESS of gPasswordHash into esi
-; 136  : 		mov esi,gptrPasswordHash	// put ADDRESS of gPasswordHash into esi (since unsigned char *gptrPasswordHash = gPasswordHash)
-; 137  : 
-; 138  : 		mov al,byte ptr [esi]				// get first byte of password hash
-; 139  : 		mov al,byte ptr [esi+4]				// get 5th byte of password hash
-; 140  : 		mov ebx,2
-; 141  : 		mov al,byte ptr [esi+ebx]			// get 3rd byte of password hash
-; 142  : 		mov al,byte ptr [esi+ebx*2]			// get 5th byte of password hash
-; 143  : 
-; 144  : 		mov ax,word ptr [esi+ebx*2]			// gets 5th and 6th bytes of password hash ( gPasswordHash[4] and gPasswordHash[5] ) into ax
-; 145  : 		mov eax,dword ptr [esi+ebx*2]		// gets 4 bytes, as in:  unsigned int X = *( (unsigned int*) &gPasswordHash[4] );
-; 146  : 
-; 147  : 		mov al,byte ptr [gkey+ebx]			// get's 3rd byte of gkey[] data
-; 148  : 
-; 149  : 		mov al,byte ptr [gptrKey+ebx]		// THIS IS INCORRECT - will add the address of the gptrKey global variable (NOT the value that gptrKey holds)
-; 150  : 
-; 151  : 		mov al,byte ptr [esi+0xd];			// access 14th byte in gkey[]: 0, 1, 2 ... d is the 14th byte
-; 152  : 		mov edi,data				// Put ADDRESS of first data element into edi
-; 153  : 		xor byte ptr [edi+1],al		// Exclusive-or the 2nd byte of data with the 14th element of the keyfile
-; 154  : 									// NOTE: Keyfile[14] = 0x21, that value changes the case of a letter and flips the LSB
-; 155  : 									// Lowercase "c" = 0x63 becomes capital "B" since 0x63 xor 0x21 = 0x42 
-; 156  : 		*/
-; 157  : 	}
-; 158  : 
-; 159  : 	return resulti;
+; 130  : 		
+; 131  : 		/*
+; 132  : 		// simple example that xors 2nd byte of data with 14th byte in the key file
+; 133  : 		lea esi,gkey				// put the ADDRESS of gkey into esi
+; 134  : 		mov esi,gptrKey;			// put the ADDRESS of gkey into esi (since *gptrKey = gkey)
+; 135  : 
+; 136  : 		lea	esi,gPasswordHash		// put ADDRESS of gPasswordHash into esi
+; 137  : 		mov esi,gptrPasswordHash	// put ADDRESS of gPasswordHash into esi (since unsigned char *gptrPasswordHash = gPasswordHash)
+; 138  : 
+; 139  : 		mov al,byte ptr [esi]				// get first byte of password hash
+; 140  : 		mov al,byte ptr [esi+4]				// get 5th byte of password hash
+; 141  : 		mov ebx,2
+; 142  : 		mov al,byte ptr [esi+ebx]			// get 3rd byte of password hash
+; 143  : 		mov al,byte ptr [esi+ebx*2]			// get 5th byte of password hash
+; 144  : 
+; 145  : 		mov ax,word ptr [esi+ebx*2]			// gets 5th and 6th bytes of password hash ( gPasswordHash[4] and gPasswordHash[5] ) into ax
+; 146  : 		mov eax,dword ptr [esi+ebx*2]		// gets 4 bytes, as in:  unsigned int X = *( (unsigned int*) &gPasswordHash[4] );
+; 147  : 
+; 148  : 		mov al,byte ptr [gkey+ebx]			// get's 3rd byte of gkey[] data
+; 149  : 
+; 150  : 		mov al,byte ptr [gptrKey+ebx]		// THIS IS INCORRECT - will add the address of the gptrKey global variable (NOT the value that gptrKey holds)
+; 151  : 
+; 152  : 		mov al,byte ptr [esi+0xd];			// access 14th byte in gkey[]: 0, 1, 2 ... d is the 14th byte
+; 153  : 		mov edi,data				// Put ADDRESS of first data element into edi
+; 154  : 		xor byte ptr [edi+1],al		// Exclusive-or the 2nd byte of data with the 14th element of the keyfile
+; 155  : 									// NOTE: Keyfile[14] = 0x21, that value changes the case of a letter and flips the LSB
+; 156  : 									// Lowercase "c" = 0x63 becomes capital "B" since 0x63 xor 0x21 = 0x42 
+; 157  : 		*/
+; 158  : 	}
+; 159  : 
+; 160  : 	return resulti;
 
   000d7	8b 45 f4	 mov	 eax, DWORD PTR _resulti$[ebp]
 
-; 160  : } // decryptData
+; 161  : } // decryptData
 
   000da	5f		 pop	 edi
   000db	5e		 pop	 esi
