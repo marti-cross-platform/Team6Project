@@ -48,85 +48,78 @@ int decryptData(char *data, int dataLength)
 			// At each step, data is load from the dl register and that step is performed on the data
 			// The modified data is then loaded back into dl
 		lbl_LOOP:
-				mov dl, byte ptr[edi + ebx];	get the current byte being manipulated
-				
-				// Free up the registers for use in Steps A - E
-				push eax
-				push ebx
-				push ecx
-				
-				// Part A reverse bit order	- value will be in 'dl'
-				mov al, dl;		load data from previous step into al
-				mov cl, 7;		starting byte position to shift maninpulated data into
-				mov dh, 1;		dh is a 1 which travels in the byte, moving 1 position from right to left with each iteration
-				mov dl, 0;		clear dl for use as loop counter
+				// Get the current data
+				mov dl, byte ptr[edi + ebx];	load the next byte from input file into dl
 
-		LOOP1 : push ax
-				AND al, dh;		first time through loop AND with 0000 0000b, second time with 0000 0001b, third time with 0000 0010b...
-				push cx;		save previous value of cx
-				mov cl, dl;		load the value of loop counter into cl
-				shr al, cl;		shr by value of loop counter(first time by 0, second time by 1...)
-				pop cx;			restore cx
-				mov bh, al;		load the shifted result into bh
-				shl bh, cl;		shift into position - '7' for byte 0, '6' for byte 1...
-				OR ch, bh;		OR to the final result
-				DEC cl;			decrease byte position to shift manipulated data into
-				INC dl;			raise the loop counter by 1
-				shl dh, 1;		first time through loop dh = 0000 0001b, second time dh = 0000 0010b...
-				pop ax;
-				cmp dl, 8;		when loop counter reaches 8, exit to END
+				// Free up the registers for use in Steps A - E
+				push eax;	save keyFile index(0x917)
+				push ebx;	save loop counter
+				push ecx;	save dataLength
+
+				// Part A reverse bit order
+				xor ebx, ebx
+				mov cl, 0x08;	set counter to proper size
+				mov ax, dx
+			LOOP1:
+				rcr ax, 1;		shift to the right, moving lsb to carry flag
+				rcl bx, 1;		shift to the left, inserting from carry flag to lsb
+				dec cl
+				cmp cl, 0
 				je END
 				jmp LOOP1
-		END :
-			xor dh, dh;		clear dh so that when we loop back to Step E, edx = dl
-			mov dl, ch;		save modified data in dl
-			//*/
+			END :
+				mov edx, ebx;	reversed bits in ebx, copy to edx
+				//*/
+				
+				// Part C swap half nibbles
+				mov eax, edx;		load data to be swapped in eax
+				lea bl, [eax * 4];	shift data to the left 2 and save in bl
+				and bl, 0xCC;		masking to get indexes we want to swap eg. 1100 1100
+				shr al, 2;			shift original data 2 to the right
+				and al, 0x33;		mask remaining indexes eg. 0011 0011
+				or al, bl;			combine and save in al
+				mov dl, al
+				//*/
 
-			// Part C swap half nibbles
-			mov eax, edx;		load data to be swapped in eax
-			lea bl, [eax * 4];	shift data to the left 2 and save in bl
-			and bl, 0xCC;		masking to get indexes we want to swap eg. 1100 1100
-			shr al, 2;			shift original data 2 to the right
-			and al, 0x33;		mask remaining indexes eg. 0011 0011
-			or dl, bl;			combine and save in dl
-			//*/
+				// Part E, swapping dl with the table value.
+				mov dl, gDecodeTable[edx]
+				//*/
 
-			// Part E, swapping dl with the table value.
-			mov dl, gDecodeTable[edx]
-			//*/
+				// Part B invert bits 0, 3, 6
+				xor	dl, 0x49; bitMask = 0x49
+				//*/
 
-			// Part B invert bits 0, 3, 6
-			xor	dl, 0x49; bitMask = 0x49
-			//*/
+				//Part D rotate 3 bits left
+				rol dl, 3
+				//*/
 
-			// Part D rotate 3 bits left
-			rol dl, 3
-			//*/
+				// Restore registers back to their previous states
+				pop ecx;						restore dataLength
+				pop ebx;						restore loop counter
+				pop eax;						restore keyFile index(0x917)
+				
+				// XOR with the keyFile
+				xor dl, byte ptr[esi + eax];	data[ebx] = data[ebx] xor with keyfile[starting_index]
+				//*/
+				
+				// Save the modified data
+				mov byte ptr[edi + ebx], dl;	replace the data in the array with the now-decrypted data
+				
+				// LOOP control
+				add ebx, 1;			increment loop counter by 1
+				cmp ebx, ecx;		if dataLength of the input file > loop counter, exit to lbl_EXIT
+				ja lbl_EXIT_END
+				jmp lbl_LOOP;		if dataLength < loop counter, jump back to lbl_LOOP
 
-			// Restore registers back to their previous states and save the modified data
-			pop eax
-			pop ebx
-			pop ecx
+			lbl_EXIT_ZERO_LENGTH :
+				sub ebx, 1;		decrement ebx to - 1 to return failure
+				jmp lbl_EXIT
 
-			// XOR with the keyFile
-			xor dl, byte ptr[esi + eax];	data[ebx] = data[ebx] xor with keyfile[starting_index]
-			//*/
+			lbl_EXIT_END :
+				xor ebx, ebx;	ebx = 0, correctly executed
 
-			// LOOP control
-			add ebx, 1;						increment loop counter by 1
-			cmp ebx, ecx;					if dataLength of the input file > loop counter, exit to lbl_EXIT
-			ja lbl_EXIT_END
-			jmp lbl_LOOP;					if dataLength < loop counter, jump back to lbl_LOOP
-
-		lbl_EXIT_ZERO_LENGTH :
-		sub ebx, 1 // decrement ebx to -1 to return failure
-		jmp lbl_EXIT //
-
-		lbl_EXIT_END :
-		xor ebx, ebx // ebx = 0, correctly executed
-
-		lbl_EXIT :
-		mov resulti, ebx
+			lbl_EXIT :
+				mov resulti, ebx
 		
 		/*
 		// simple example that xors 2nd byte of data with 14th byte in the key file
