@@ -48,8 +48,8 @@ _BSS	ENDS
 _DATA	SEGMENT
 ?gptrKey@@3PAEA DD FLAT:?gkey@@3PAEA			; gptrKey
 ?gptrPasswordHash@@3PAEA DD FLAT:?gPasswordHash@@3PAEA	; gptrPasswordHash
-?gPassword@@3PADA DB 'password', 00H			; gPassword
-	ORG $+247
+?gPassword@@3PADA DB 'SECRET', 00H			; gPassword
+	ORG $+249
 ?gNumRounds@@3HA DD 01H					; gNumRounds
 	ORG $+4
 ?gEncodeTable@@3PAEA DB 027H				; gEncodeTable
