@@ -91,15 +91,15 @@ int decryptData(char *data, int dataLength)
 			//*/
 
 			// Part E, swapping dl with the table value.
-			mov dl, gEncodeTable[edx]
+			mov dl, gDecodeTable[edx]
 			//*/
 
 			// Part B invert bits 0, 3, 6
 			xor	dl, 0x49; bitMask = 0x49
 			//*/
 
-			// Part D rotate 3 bits right
-			ror dl, 3
+			// Part D rotate 3 bits left
+			rol dl, 3
 			//*/
 
 			// Restore registers back to their previous states and save the modified data

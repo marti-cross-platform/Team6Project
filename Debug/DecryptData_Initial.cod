@@ -18,7 +18,7 @@ EXTRN	?gptrKey@@3PAEA:DWORD				; gptrKey
 EXTRN	?gptrPasswordHash@@3PAEA:DWORD			; gptrPasswordHash
 EXTRN	?gdebug1@@3EA:BYTE				; gdebug1
 EXTRN	?gdebug2@@3EA:BYTE				; gdebug2
-EXTRN	?gEncodeTable@@3PAEA:BYTE			; gEncodeTable
+EXTRN	?gDecodeTable@@3PAEA:BYTE			; gDecodeTable
 EXTRN	___security_cookie:DWORD
 ;	COMDAT rtc$TMZ
 rtc$TMZ	SEGMENT
@@ -297,10 +297,10 @@ $END$6:
 ; 91   : 			//*/
 ; 92   : 
 ; 93   : 			// Part E, swapping dl with the table value.
-; 94   : 			mov dl, gEncodeTable[edx]
+; 94   : 			mov dl, gDecodeTable[edx]
 
   000b2	8a 92 00 00 00
-	00		 mov	 dl, BYTE PTR ?gEncodeTable@@3PAEA[edx]
+	00		 mov	 dl, BYTE PTR ?gDecodeTable@@3PAEA[edx]
 
 ; 95   : 			//*/
 ; 96   : 
@@ -311,10 +311,10 @@ $END$6:
 
 ; 99   : 			//*/
 ; 100  : 
-; 101  : 			// Part D rotate 3 bits right
-; 102  : 			ror dl, 3
+; 101  : 			// Part D rotate 3 bits left
+; 102  : 			rol dl, 3
 
-  000bb	c0 ca 03	 ror	 dl, 3
+  000bb	c0 c2 03	 rol	 dl, 3
 
 ; 103  : 			//*/
 ; 104  : 

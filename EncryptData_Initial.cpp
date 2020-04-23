@@ -76,10 +76,11 @@ int encryptData(char *data, int dataLength)
 				and bl, 0xCC;		masking to get indexes we want to swap eg. 1100 1100
 				shr al, 2;			shift original data 2 to the right
 				and al, 0x33;		mask remaining indexes eg. 0011 0011
-				or dl, bl;			combine and save in dl
+				or al, bl;			combine and save in al
+				mov dl, al
 				//*/
 
-				// Part A reverse bit order	- value will be in 'dl'
+				// Part A reverse bit order	- value will be in ch, then saved to dl
 				mov al, dl;		load data from previous step into al
 				mov cl, 7;		starting byte position to shift maninpulated data into
 				mov dh, 1;		dh is a 1 which travels in the byte, moving 1 position from right to left with each iteration
