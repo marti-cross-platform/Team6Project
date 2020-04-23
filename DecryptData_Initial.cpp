@@ -25,12 +25,13 @@ int decryptData(char *data, int dataLength)
 		// (gptrPasswordHash or gPasswordHash), (gptrKey or gkey), gNumRounds
 			mov esi, gptrPasswordHash;	put the address of gPasswordHash into esi
 			xor eax, eax
-			mov al, byte ptr[esi];		store gPassword[0] in %al
+			mov al, byte ptr[esi];		store gPassword[0] in al
 			shl ax, 8;					left shift by 8 (multiply by 256)
 			xor ecx, ecx;				set ecx = 0
 			mov cl, byte ptr[esi + 1];	set cx to gPassword[1]
-			add ax, cx;					add gPassword[1] to ax, ax is now the starting index for the keyFile
+
 			// ax = starting_index = gPasswordHash[0] * 256 + gPasswordHash[1]
+			add ax, cx;					add gPassword[1] to ax, ax is now the starting index for the keyFile
 
 			xor ebx, ebx;				ebx = control variable(loop)
 			xor ecx, ecx
@@ -39,8 +40,8 @@ int decryptData(char *data, int dataLength)
 			sub ecx, 1;					ecx-- (file length is 1 less than previous)
 			jbe lbl_EXIT_ZERO_LENGTH
 
-			mov edi, data;				put the address of first byte of data in %edi
-			mov esi, gptrKey;			put the address of gKey into %esi
+			mov edi, data;				put the address of first byte of data in edi
+			mov esi, gptrKey;			put the address of gKey into esi
 	
 			//
 			// LOOP THROUGH ENTIRE data[] BYTE BY BYTE
