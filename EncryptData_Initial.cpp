@@ -11,6 +11,11 @@ int encryptData(char *data, int dataLength)
 {
 	int resulti = 0;
 
+	int index = 0;					// declare local variables
+	int hop_count;
+	int round;
+	int Starting_index;
+
 	gdebug1 = 0;					// a couple of global variables that could be used for debugging
 	gdebug2 = 0;					// also can have a breakpoint in C code
 
@@ -24,41 +29,93 @@ int encryptData(char *data, int dataLength)
 		// you will need to reference some of these global variables
 		// (gptrPasswordHash or gPasswordHash), (gptrKey or gkey), gNumRounds
 			mov esi, gptrPasswordHash;	put the address of gPasswordHash into esi
-			xor eax, eax
-			mov al, byte ptr[esi];		store gPassword[0] in al
-			shl ax, 8;					left shift by 8 (multiply by 256)
-			xor ecx, ecx;				set ecx = 0
-			mov cl, byte ptr[esi + 1];	set cx to gPassword[1]
 			
-			// ax = starting_index = gPasswordHash[0] * 256 + gPasswordHash[1]
-			add ax, cx;				add gPassword[1] to ax, ax is now the starting index for the keyFile
-			
-			xor ebx, ebx;			ebx = control variable(loop)
+			// for(round = 0; round < #rounds; round++) {
+			mov round, 0
+			jmp	SHORT OUTER_LOOP_3
+		OUTER_LOOP_2:
+			mov	eax, round
+			add	eax, 1
+			mov round, eax
+		OUTER_LOOP_3 :
+			movzx eax, BYTE PTR[gNumRounds]
+			cmp	round, eax
+			jge	OUTER_LOOP_1
+
+			// Starting_index[round] = gPasswordHash[0 + round * 4] * 256 + gPasswordHash[1 + round * 4];
+			mov	eax, round
+			movzx	ecx, BYTE PTR gPasswordHash[eax * 4]
+			shl	ecx, 8
+			mov	edx, round
+			movzx	eax, BYTE PTR gPasswordHash[edx * 4 + 1]
+			add	ecx, eax
+			mov	edx, round
+			mov	Starting_index[edx * 4], ecx
+
+			// hop_count[round] = gPasswordHash[2 + round * 4] * 256 + gPasswordHash[3 + round * 4];
+			mov	eax, round
+			movzx	ecx, BYTE PTR gPasswordHash[eax * 4 + 2]
+			shl	ecx, 8
+			mov	edx, round
+			movzx	eax, BYTE PTR gPasswordHash[edx * 4 + 3]
+			add	ecx, eax
+			mov	edx, round
+			mov	hop_count[edx * 4], ecx
+			push edx;	save  round
+
+			//if(hop_count == 0) hop_count = 0xFFFF
+			cmp hop_count, 0
+			jne	SHORT CONTINUE
+			mov	hop_count, 0xFFFF
+		CONTINUE:
+
+			// index = Starting_index
+			mov eax, Starting_index
+			mov index, eax;					store index in a local variable
+
+			xor ebx, ebx;					ebx = control variable(loop)
 			xor ecx, ecx
-			mov ecx, dataLength;	ecx = length
-			cmp ecx, 0;				check that the length is not less than or equal to 0
-			sub ecx, 1;				ecx-- (file length is 1 less than previous)
+			mov ecx, dataLength;			ecx = length
+			cmp ecx, 0;						check that the length is not less than or equal to 0
+			sub ecx, 1;						ecx-- (file length is 1 less than previous)
 			jbe lbl_EXIT_ZERO_LENGTH
 
-			mov edi, data;		put the address of first byte of data in edi
-			mov esi, gptrKey;	put the address of gKey into esi
+			mov edi, data;					put the address of first byte of data in edi
+			mov esi, gptrKey;				put the address of gKey into esi
 
 			//
 			// LOOP THROUGH ENTIRE data[] BYTE BY BYTE
-			// At each step, data is load from the dl register and that step is performed on the data
+			// At each step, data is loaded from the dl register and that step is performed on the data
 			// The modified data is then loaded back into dl
 		lbl_LOOP :
-				mov dl, byte ptr[edi + ebx];	get the current byte being manipulated
+				// Get the current data
+				mov dl, byte ptr[edi + ebx];		load the next byte from input file into dl
 
 				// XOR with the keyFile
-				xor dl, byte ptr[esi + eax];	data[ebx] = data[ebx] xor with keyfile[starting_index]
+				mov eax, index
+				xor dl, byte ptr[esi + eax];	data[ebx] = data[ebx] xor with keyfile[index]
+				push eax;	save keyFile index
 				//*/
 
-				// Free up the registers for use in Steps A - E
-				push eax
-				push ebx
-				push ecx				
+				// index += hop_count[round]
+				pop edx;						restore round
+				mov	eax, index
+				add	eax, hop_count[edx * 4]
+				mov index, eax
 				
+				// if(index >= 65537) index -= 65537
+				cmp	index, 0x10001
+				jl	SHORT STEPS
+				mov	eax, index
+				sub	eax, 0x10001
+				mov	index, eax
+				STEPS:			
+				
+				// Free up the registers for use in Steps A - E
+				push ebx;	save loop counter
+				push ecx;	save dataLength
+				push edx;	save round
+
 				//Part D rotate 3 bits right
 				ror dl, 3
 				//*/
@@ -81,38 +138,28 @@ int encryptData(char *data, int dataLength)
 				mov dl, al
 				//*/
 
-				// Part A reverse bit order	- value will be in ch, then saved to dl
-				mov al, dl;		load data from previous step into al
-				mov cl, 7;		starting byte position to shift maninpulated data into
-				mov dh, 1;		dh is a 1 which travels in the byte, moving 1 position from right to left with each iteration
-				mov dl, 0;		clear dl for use as loop counter
-
-		LOOP1 : push ax
-				AND al, dh;		first time through loop AND with 0000 0000b, second time with 0000 0001b, third time with 0000 0010b...
-				push cx;		save previous value of cx
-				mov cl, dl;		load the value of loop counter into cl
-				shr al, cl;		shr by value of loop counter(first time by 0, second time by 1...)
-				pop cx;			restore cx
-				mov bh, al;		load the shifted result into bh
-				shl bh, cl;		shift into position - '7' for byte 0, '6' for byte 1...
-				OR ch, bh;		OR to the final result
-				DEC cl;			decrease byte position to shift manipulated data into
-				INC dl;			raise the loop counter by 1
-				shl dh, 1;		first time through loop dh = 0000 0001b, second time dh = 0000 0010b...
-				pop ax;			
-				cmp dl, 8;		when loop counter reaches 8, exit to END
+				// Part A reverse bit order
+				xor ebx, ebx
+				mov cl, 0x08;	set counter to proper size
+				mov ax, dx
+			LOOP1 :
+				rcr ax, 1;		shift to the right, moving lsb to carry flag
+				rcl bx, 1;		shift to the left, inserting from carry flag to lsb
+				dec cl;
+				cmp cl, 0
 				je END
 				jmp LOOP1
-		   END :
-				xor dh, dh;		clear dh so that when we loop back to Step E, edx = dl
-				mov dl, ch;		save modified data in dl
+			END :
+				mov edx, ebx;	reversed bits in ebx, copy to edx
 				//*/
-
+			
 				// Restore registers back to their previous states and save the modified data
-				pop eax
-				pop ebx
-				pop ecx
-				
+				pop ecx;						restore dataLength
+				pop ebx;						restore loop counter
+				pop eax;						restore keyFile index
+				mov byte ptr[edi + ebx], dl;	replace the data in the array with the encrypted data
+				xor edx, edx
+
 				// LOOP control
 				add ebx, 1;			increment loop counter by 1
 				cmp ebx, ecx;		if dataLength of the input file > loop counter, exit to lbl_EXIT
@@ -129,6 +176,12 @@ int encryptData(char *data, int dataLength)
 		lbl_EXIT :
 			mov resulti, ebx
 
+	// } end for loop through file
+			pop edx
+			jmp	OUTER_LOOP_2
+		OUTER_LOOP_1:
+
+// } end for loop through number of rounds
 
 			/*// simple example that xors 2nd byte of data with 14th byte in the key file
 			lea esi,gkey				// put the ADDRESS of gkey into esi
