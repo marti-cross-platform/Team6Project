@@ -67,4 +67,4 @@
   <dd>The password should be a single line with a series of ASCII characters. The number of characters should be between 8 and 32, inclusive.</dd>
 </dl>
 <h2>Contributors</h2>
-<p>The contributors to this project are <a href="https://www.linkedin.com/in/david-martinez-a693b165/" target="_blank">Mart</a> and <a href="https://github.com/JordanMolone" target="_blank">Jordan Malone</a>.</p>
+<p>The contributors to this project are <a href="https://www.linkedin.com/in/david-martinez-a693b165/" target="_blank">Marti</a> and <a href="https://github.com/JordanMolone" target="_blank">Jordan Malone</a>.</p>
