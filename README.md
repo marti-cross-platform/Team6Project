@@ -2,30 +2,35 @@
 <h2>Getting Started</h2>
 <p>To get started with this project, follow these steps:</p>
 <ol>
-  <li>Install the necessary prerequisites (see the "Prerequisites" section below)</li>
-  <li>Clone the repository: `git clone https://github.com/your-username/encryption-decryption.git`</li>
-  <li>Navigate to the project directory: `cd encryption-decryption`</li>
-  <li>Compile the program: `make`</li>
-  <li>Run the program: `./encrypt-decrypt [key file] [message file] [password] [number of rounds (optional)]`</li>
+  <li>Install the required software: Microsoft Visual Studio or a similar development environment</li>
+  <li>Clone the repository: `git clone https://github.com/marti-cross-platform/Team6Project.git`</li>
+  <li>Open the project in Visual Studio by double-clicking on the solution file (.sln)</li>
+  <li>Build the project by going to the "Build" menu and selecting "Build Solution"</li>
+  <li>Run the program by going to the "Debug" menu and selecting "Start Without Debugging"</li>
 </ol>
 
 <h2>Prerequisites</h2>
 <p>Before you can run this project, you need to have the following software installed on your machine:</p>
 <ul>
-  <li><a href="https://www.gnu.org/software/binutils/" target="_blank">GNU Binutils</a></li>
-  <li><a href="https://gcc.gnu.org/" target="_blank">GCC</a></li>
+  <li><a href="https://visualstudio.microsoft.com/" target="_blank">Microsoft Visual Studio</a> or a similar development environment</li>
 </ul>
 
-<h2>Installation</h2>
+<h2>Installing</h2>
 <p>To install this project, follow these steps:</p>
 <ol>
-  <li>Clone the repository: `git clone https://github.com/your-username/encryption-decryption.git`</li>
-  <li>Navigate to the project directory: `cd encryption-decryption`</li>
-  <li>Compile the program: `make`</li>
+  <li>Clone the repository: `git clone https://github.com/your-username/project-name.git`</li>
+  <li>Open the project in Visual Studio by double-clicking on the solution file (.sln)</li>
+  <li>Build the project by going to the "Build" menu and selecting "Build Solution"</li>
 </ol>
 
 <h2>Running the Tests</h2>
-<p>To run the tests for this project, use the `make test` command. This will run the test suite and output the results to the console.</p>
+<p>To run the tests for this project, follow these steps:</p>
+<ol>
+  <li>Open the project in Visual Studio by double-clicking on the solution file (.sln)</li>
+  <li>Open the "Test Explorer" window by going to the "Test" menu and selecting "Windows" then "Test Explorer"</li>
+  <li>Click the "Run All" button to run all of the tests</li>
+  <li>The test results will be displayed in the "Test Explorer" window</li>
+</ol>
 
 <h2>Technologies Used</h2>
 <p>This project uses the following technologies:</p>
@@ -39,6 +44,7 @@
   </dt>
   <dd>A general-purpose, object-oriented programming language that is commonly used for systems programming and creating high-performance applications.</dd>
 </dl>
+
 <h2>Troubleshooting Tips</h2>
 <p>If you encounter any issues while running this project, here are a few things you can try:</p>
 <ul>
